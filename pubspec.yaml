@@ -1,5 +1,5 @@
 name: antifakegps
-description: A new Flutter plugin project.
+description: detect any application that requires MOCK LOCATION.
 version: 0.0.1
 homepage:
 
