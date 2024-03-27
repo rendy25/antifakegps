@@ -15,6 +15,7 @@ class MockAntifakegpsPlatform
         "FakeGPSApp2",
         "FakeGPSApp3",
       ]);
+  Future<bool?> isFakeGpsAppRunning() => Future.value(false);
 }
 
 void main() {
@@ -33,5 +34,6 @@ void main() {
     expect(await antifakegpsPlugin.detectFakeLocation(), false);
     expect(await antifakegpsPlugin.getMockLocationApps(),
         ['FakeGPSApp1', 'FakeGPSApp2', 'FakeGPSApp3']);
+    expect(await antifakegpsPlugin.isFakeGpsAppRunning(), false);
   });
 }

@@ -23,6 +23,7 @@ void main() {
     expect(await platform.detectFakeLocation(), false);
     expect(await platform.getMockLocationApps(),
         ['FakeGPSApp1', 'FakeGPSApp2', 'FakeGPSApp3']);
+    expect(await platform.isFakeGpsAppRunning(), false);
   });
 }
 

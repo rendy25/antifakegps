@@ -1,4 +1,5 @@
 package com.lanchen.antifakegps;
+import com.lanchen.antifakegps.mocklocation.MockLocationCheck;
 
 import androidx.annotation.NonNull;
 
@@ -13,10 +14,14 @@ import android.os.Build;
 import android.provider.Settings;
 import android.app.AppOpsManager;
 import android.os.Process;
+import android.location.Location;
 
+import android.app.ActivityManager;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import java.util.List;
+import java.util.ArrayList;
+
 
 /** AntifakegpsPlugin */
 public class AntifakegpsPlugin implements FlutterPlugin, MethodCallHandler {
@@ -44,6 +49,23 @@ public class AntifakegpsPlugin implements FlutterPlugin, MethodCallHandler {
     } else if (call.method.equals("getMockLocationApps")) {
        List<String> mockLocationApps = getMockLocationApps(context);
        result.success(mockLocationApps);
+    } else if (call.method.equals("isFakeGpsAppRunning")) {
+      boolean isFakeGpsRunning = isFakeGpsAppRunning(context);
+      result.success(isFakeGpsRunning);
+    } else if (call.method.equals("canMockLocation")) {
+      MockLocationCheck.LocationResult locationResult = new MockLocationCheck.LocationResult(){
+        @Override
+        public void gotLocation(Location location){
+          //Got the location!
+          if(location != null){
+            result.success(location.isFromMockProvider());
+          }else {
+            result.success(false);
+          }
+        }
+      };
+      MockLocationCheck mockLocationCheck = new MockLocationCheck();
+      mockLocationCheck.getLocation(context, locationResult);
     } else {
       result.notImplemented();
     }
@@ -151,7 +173,7 @@ public class AntifakegpsPlugin implements FlutterPlugin, MethodCallHandler {
     return isMockLocation;
   }
 
-  public List<String> getMockLocationApps(Context context) {
+    public List<String> getMockLocationApps(Context context) {
     List<String> mockLocationApps = new ArrayList<>();
 
     PackageManager packageManager = context.getPackageManager();
@@ -159,13 +181,11 @@ public class AntifakegpsPlugin implements FlutterPlugin, MethodCallHandler {
 
     for (ApplicationInfo packageInfo : packages) {
         try {
-            // Periksa apakah aplikasi memiliki izin "android.permission.ACCESS_MOCK_LOCATION"
             if ((packageManager.getApplicationInfo(packageInfo.packageName, PackageManager.GET_META_DATA).flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
-                // Aplikasi non-sistem
-                if (packageManager.getPackageInfo(packageInfo.packageName, PackageManager.GET_PERMISSIONS).requestedPermissions != null) {
-                    for (String permission : packageManager.getPackageInfo(packageInfo.packageName, PackageManager.GET_PERMISSIONS).requestedPermissions) {
-                        if (permission.equals("android.permission.ACCESS_MOCK_LOCATION")) {
-                            // Aplikasi memiliki izin untuk memalsukan lokasi
+                String[] requestedPermissions = packageManager.getPackageInfo(packageInfo.packageName, PackageManager.GET_PERMISSIONS).requestedPermissions;
+                if (requestedPermissions != null) {
+                    for (String permission : requestedPermissions) {
+                        if ("android.permission.ACCESS_MOCK_LOCATION".equals(permission)) {
                             mockLocationApps.add(packageInfo.loadLabel(packageManager).toString());
                             break;
                         }
@@ -173,13 +193,91 @@ public class AntifakegpsPlugin implements FlutterPlugin, MethodCallHandler {
                 }
             }
         } catch (PackageManager.NameNotFoundException ignored) {
-            // Abaikan NameNotFoundException
+            // Ignore NameNotFoundException
         }
     }
 
-    return mockLocationApps;
-}
+        return mockLocationApps;
+    }
 
+    /*public boolean isFakeGpsAppRunning(Context context) {
+        // Get package manager
+        PackageManager packageManager = context.getPackageManager();
+        // Get activity manager
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+
+        // Get the list of running services
+        List<ActivityManager.RunningServiceInfo> runningServices;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            runningServices = activityManager.getRunningServices(Integer.MAX_VALUE);
+        } else {
+            // This method is deprecated in Android Oreo and above
+            // Fallback to old method
+            runningServices = activityManager.getRunningServices(Integer.MAX_VALUE);
+        }
+
+        // Iterate through the list of running services
+        for (ActivityManager.RunningServiceInfo service : runningServices) {
+            // Check if the service is related to a fake GPS app
+            try {
+                ApplicationInfo appInfo = packageManager.getApplicationInfo(service.service.getPackageName(), PackageManager.GET_META_DATA);
+                if (appInfo != null && appInfo.metaData != null && appInfo.metaData.containsKey("com.lexa.fakegps")) {
+                    // Fake GPS app detected
+                    return true;
+                }
+            } catch (PackageManager.NameNotFoundException ignored) {
+                // Ignore NameNotFoundException
+            }
+        }
+
+        // No fake GPS app detected
+        return false;
+    }*/
+
+    /*public boolean isFakeGpsAppRunning(Context context) {
+        // Get package manager
+        PackageManager packageManager = context.getPackageManager();
+        // Get activity manager
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+
+        // Get the list of running app processes
+        List<ActivityManager.RunningAppProcessInfo> runningAppProcesses = activityManager.getRunningAppProcesses();
+
+        // Iterate through the list of running app processes
+        if (runningAppProcesses != null) {
+            for (ActivityManager.RunningAppProcessInfo processInfo : runningAppProcesses) {
+                if (processInfo.processName.equals("com.lexa.fakegps")) {
+                    // Fake GPS app detected
+                    return true;
+                }
+            }
+        }
+        // No fake GPS app detected
+        return false;
+    }*/
+
+
+    public boolean isFakeGpsAppRunning(Context context) {
+        // Get activity manager
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+
+        // Get the list of running app processes
+        List<ActivityManager.RunningAppProcessInfo> runningAppProcesses = activityManager.getRunningAppProcesses();
+
+        // Iterate through the list of running app processes
+        if (runningAppProcesses != null) {
+            for (ActivityManager.RunningAppProcessInfo processInfo : runningAppProcesses) {
+                // Check if the process name matches the package name of the fake GPS app
+                if (processInfo.processName.equals("com.lexa.fakegps")) {
+                    // Fake GPS app detected
+                    return true;
+                }
+            }
+        }
+
+        // No fake GPS app detected
+        return false;
+    }
 
 
   @Override
