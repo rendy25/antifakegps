@@ -21,6 +21,8 @@ void main() {
   test('getPlatformVersion', () async {
     expect(await platform.getPlatformVersion(), '42');
     expect(await platform.detectFakeLocation(), false);
+    expect(await platform.getMockLocationApps(),
+        ['FakeGPSApp1', 'FakeGPSApp2', 'FakeGPSApp3']);
   });
 }
 

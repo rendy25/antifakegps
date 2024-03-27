@@ -30,4 +30,8 @@ abstract class AntifakegpsPlatform extends PlatformInterface {
   Future<bool?> detectFakeLocation() {
     throw UnimplementedError('detectFakeLocation() has not been implemented.');
   }
+
+  Future<List<String>?> getMockLocationApps() {
+    throw UnimplementedError('getMockLocationApps() has not been implemented.');
+  }
 }

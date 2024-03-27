@@ -22,4 +22,11 @@ class MethodChannelAntifakegps extends AntifakegpsPlatform {
         await methodChannel.invokeMethod<bool>('detectFakeLocation');
     return version;
   }
+
+  @override
+  Future<List<String>?> getMockLocationApps() async {
+    final version =
+        await methodChannel.invokeMethod<List<String>>('getMockLocationApps');
+    return version;
+  }
 }

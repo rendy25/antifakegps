@@ -31,4 +31,16 @@ class Antifakegps {
       // return false;
     }
   }
+
+  Future<List<String>?> getMockLocationApps() async {
+    try {
+      final List<String>? result =
+          await mothodChannel.invokeMethod('getMockLocationApps');
+      return result;
+    } catch (e) {
+      // Tangani kesalahan jika terjadi
+      print('Error calling getMockLocationApps: $e');
+      return null;
+    }
+  }
 }

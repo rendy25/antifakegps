@@ -41,6 +41,9 @@ public class AntifakegpsPlugin implements FlutterPlugin, MethodCallHandler {
     } else if (call.method.equals("detectFakeLocation")) {
       boolean isMock = isMockLocationEnabled(context);
       result.success(isMock);
+    } else if (call.method.equals("getMockLocationApps")) {
+       List<String> mockLocationApps = getMockLocationApps(context);
+       result.success(mockLocationApps);
     } else {
       result.notImplemented();
     }
@@ -147,6 +150,36 @@ public class AntifakegpsPlugin implements FlutterPlugin, MethodCallHandler {
 
     return isMockLocation;
   }
+
+  public List<String> getMockLocationApps(Context context) {
+    List<String> mockLocationApps = new ArrayList<>();
+
+    PackageManager packageManager = context.getPackageManager();
+    List<ApplicationInfo> packages = packageManager.getInstalledApplications(PackageManager.GET_META_DATA);
+
+    for (ApplicationInfo packageInfo : packages) {
+        try {
+            // Periksa apakah aplikasi memiliki izin "android.permission.ACCESS_MOCK_LOCATION"
+            if ((packageManager.getApplicationInfo(packageInfo.packageName, PackageManager.GET_META_DATA).flags & ApplicationInfo.FLAG_SYSTEM) == 0) {
+                // Aplikasi non-sistem
+                if (packageManager.getPackageInfo(packageInfo.packageName, PackageManager.GET_PERMISSIONS).requestedPermissions != null) {
+                    for (String permission : packageManager.getPackageInfo(packageInfo.packageName, PackageManager.GET_PERMISSIONS).requestedPermissions) {
+                        if (permission.equals("android.permission.ACCESS_MOCK_LOCATION")) {
+                            // Aplikasi memiliki izin untuk memalsukan lokasi
+                            mockLocationApps.add(packageInfo.loadLabel(packageManager).toString());
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (PackageManager.NameNotFoundException ignored) {
+            // Abaikan NameNotFoundException
+        }
+    }
+
+    return mockLocationApps;
+}
+
 
 
   @Override

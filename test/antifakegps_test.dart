@@ -10,6 +10,11 @@ class MockAntifakegpsPlatform
   @override
   Future<String?> getPlatformVersion() => Future.value('42');
   Future<bool?> detectFakeLocation() => Future.value(false);
+  Future<List<String>?> getMockLocationApps() => Future.value([
+        "FakeGPSApp1",
+        "FakeGPSApp2",
+        "FakeGPSApp3",
+      ]);
 }
 
 void main() {
@@ -26,5 +31,7 @@ void main() {
 
     expect(await antifakegpsPlugin.getPlatformVersion(), '42');
     expect(await antifakegpsPlugin.detectFakeLocation(), false);
+    expect(await antifakegpsPlugin.getMockLocationApps(),
+        ['FakeGPSApp1', 'FakeGPSApp2', 'FakeGPSApp3']);
   });
 }
