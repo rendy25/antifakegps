@@ -13,6 +13,19 @@ For help getting started with Flutter development, view the
 [online documentation](https://flutter.dev/docs), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
-# feature
+# Feature
 
-Detect any application that requires MOCK LOCATION
+Detect any installed applications that require MOCK LOCATION
+
+## Usage
+Import the package with:
+
+```
+import 'package:antifakegps/antifakegps.dart';
+```
+
+Then you can use the following method to check whether the user has a fake location app:
+
+```
+bool isFakeLocation = (await Antifakegps().detectFakeLocation())!;
+```
